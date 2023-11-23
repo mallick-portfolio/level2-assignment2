@@ -1,7 +1,14 @@
 import { Schema, model } from 'mongoose';
-import { TAddress, TFullName, TOrder, TUser } from './user.interface';
-
-export const fullNameSchema = new Schema<TFullName>({
+import {
+  TAddress,
+  TFullName,
+  TOrder,
+  TUser,
+  UserModel,
+} from './user.interface';
+import bcrypt from 'bcrypt';
+import config from '../../config';
+export const fullNameSchema = new Schema<TFullName, UserModel>({
   firstName: {
     type: String,
     required: true,
@@ -42,51 +49,79 @@ export const orderSchema = new Schema<TOrder>({
   },
 });
 
-const userSchema = new Schema<TUser>({
-  userId: {
-    type: Number,
-    required: true,
-    unique: true,
-  },
-  username: {
-    type: String,
-    required: true,
-    unique: true,
-    trim: true,
-  },
-  password: {
-    type: String,
-    required: true,
-  },
-  fullName: {
-    type: fullNameSchema,
-    required: true,
-  },
-  age: {
-    type: Number,
-    required: true,
-  },
-  email: {
-    type: String,
-    required: true,
-    unique: true,
-    trim: true,
-  },
-  isActive: {
-    type: Boolean,
-    required: true,
-  },
-  hobbies: [
-    {
+const userSchema = new Schema<TUser>(
+  {
+    userId: {
+      type: Number,
+      required: true,
+      unique: true,
+    },
+    username: {
+      type: String,
+      required: true,
+      unique: true,
+      trim: true,
+    },
+    password: {
       type: String,
       required: true,
     },
-  ],
-  address: {
-    type: addressSchema,
-    required: true,
+    fullName: {
+      type: fullNameSchema,
+      required: true,
+    },
+    age: {
+      type: Number,
+      required: true,
+    },
+    email: {
+      type: String,
+      required: true,
+      unique: true,
+      trim: true,
+    },
+    isActive: {
+      type: Boolean,
+      required: true,
+    },
+    hobbies: [
+      {
+        type: String,
+        required: true,
+      },
+    ],
+    address: {
+      type: addressSchema,
+      required: true,
+    },
+    orders: [{ type: orderSchema }],
   },
-  orders: [{ type: orderSchema }],
+  {
+    toJSON: {
+      transform(doc, ret) {
+        delete ret.password;
+      },
+    },
+  },
+);
+
+// before save user
+userSchema.pre('save', async function (next) {
+  this.password = await bcrypt.hash(
+    this.password,
+    Number(config.salt_password),
+  );
+  next();
 });
 
-export const User = model<TUser>('User', userSchema);
+// userSchema.post('save', async function (doc, next) {
+//   doc.password = '';
+//   next();
+// });
+
+// static method area
+
+userSchema.statics.isUserExists = async function (id: string) {
+  return this.findOne({ userId: id });
+};
+export const User = model<TUser, UserModel>('User', userSchema);
