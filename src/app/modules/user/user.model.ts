@@ -127,7 +127,7 @@ userSchema.pre('save', async function (next) {
   next();
 });
 
-userSchema.pre('findOneAndUpdate', async function (next) {
+userSchema.pre<any>('findOneAndUpdate', async function (next) {
   try {
     if (this._update.password) {
       const hashed = await bcrypt.hash(
