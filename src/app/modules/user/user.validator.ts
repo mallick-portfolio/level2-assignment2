@@ -1,10 +1,7 @@
 import { z } from 'zod';
 
 const fullNameValidationSchema = z.object({
-  firstName: z
-    .string({ required_error: 'First name is required' })
-    .min(5, { message: 'First name at list 5 character' })
-    .max(20, { message: 'First name at max 20 character' }),
+  firstName: z.string({ required_error: 'First name is required' }),
   lastName: z.string({ required_error: 'Last name is required' }),
 });
 

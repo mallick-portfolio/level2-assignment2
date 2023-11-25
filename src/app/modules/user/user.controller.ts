@@ -124,6 +124,38 @@ const updateUserByID = async (req: Request, res: Response) => {
     return res.status(500).json({
       success: false,
       error: {
+        code: 500,
+        description: error,
+      },
+    });
+  }
+};
+
+// delete user by id
+const deleteUserByID = async (req: Request, res: Response) => {
+  try {
+    const { userId } = req.params;
+    if (await User.isUserExists(userId)) {
+      await UserServices.deleteUserByIDFromDB(userId);
+      return res.status(404).json({
+        success: true,
+        message: 'User deleted successfully!',
+        data: null,
+      });
+    } else {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found',
+        error: {
+          code: 404,
+          description: 'User not found!',
+        },
+      });
+    }
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      error: {
         code: 404,
         description: error || 'User not found!',
       },
@@ -131,10 +163,10 @@ const updateUserByID = async (req: Request, res: Response) => {
   }
 };
 
-// udpate user by id
 export const UserController = {
   createUser,
   getAllUsers,
   getUserByID,
   updateUserByID,
+  deleteUserByID,
 };

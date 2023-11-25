@@ -35,9 +35,16 @@ const updateUserByIDIntoDB = async (userId: string, updateData: TUser) => {
   return result;
 };
 
+// Delete user from db
+const deleteUserByIDFromDB = async (userId: string) => {
+  const result = await User.findOneAndUpdate({ userId }, { isActive: false });
+  return result;
+};
+
 export const UserServices = {
   insertUserIntoDB,
   getAllUserFromDB,
   getUserByIDFromDB,
   updateUserByIDIntoDB,
+  deleteUserByIDFromDB,
 };

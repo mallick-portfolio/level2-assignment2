@@ -125,6 +125,17 @@ userSchema.pre('save', async function (next) {
   next();
 });
 
+// find user that has only isActive true
+userSchema.pre('find', async function (next) {
+  this.find({ isActive: { $ne: false } });
+  next();
+});
+// find one user that has only isActive true
+userSchema.pre('findOne', async function (next) {
+  this.find({ isActive: { $ne: false } });
+  next();
+});
+
 // after update user
 
 // userSchema.post('save', async function (doc, next) {
