@@ -29,10 +29,11 @@ const getUserByID = async (req: Request, res: Response) => {
     const { userId } = req.params;
     const user = await User.isUserExists(userId);
     if (user) {
+      const result = await UserServices.getUserByIDFromDB(userId);
       return res.status(200).json({
         success: true,
         message: 'User fetched successfully!',
-        data: user,
+        data: result,
       });
     } else {
       return res.status(404).json({

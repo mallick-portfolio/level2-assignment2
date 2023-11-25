@@ -19,7 +19,7 @@ const getAllUserFromDB = async () => {
 
 // get user by id  form db
 const getUserByIDFromDB = async (userId: string) => {
-  const result = User.findOne({ userId });
+  const result = await User.findOne({ userId }).select('-_id -__v').exec();
   return result;
 };
 
