@@ -111,6 +111,8 @@ const userSchema = new Schema<TUser, UserModel>(
     toJSON: {
       transform(doc, ret) {
         delete ret.password;
+        delete ret.__v;
+        delete ret._id;
       },
     },
   },
@@ -123,6 +125,21 @@ userSchema.pre('save', async function (next) {
     Number(config.salt_password),
   );
   next();
+});
+
+userSchema.pre('findOneAndUpdate', async function (next) {
+  try {
+    if (this._update.password) {
+      const hashed = await bcrypt.hash(
+        this._update.password,
+        Number(config.salt_password),
+      );
+      this._update.password = hashed;
+    }
+    next();
+  } catch (error: any) {
+    return next(error);
+  }
 });
 
 // find user that has only isActive true
@@ -145,8 +162,12 @@ userSchema.pre('findOne', async function (next) {
 
 // static method area
 
+userSchema.statics.isEmailExists = async function (email: string) {
+  const isEmail = await this.findOne({ email });
+  return isEmail;
+};
 userSchema.statics.isUserExists = async function (id: string) {
-  const existingUser = await User.findOne({ userId: id });
+  const existingUser = await User.findOne({ userId: id }).select('-_id -__v');
   return existingUser;
 };
 

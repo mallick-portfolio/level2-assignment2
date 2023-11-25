@@ -1,4 +1,4 @@
-import { TUser } from './user.interface';
+import { TOrder, TUser } from './user.interface';
 import { User } from './user.model';
 
 // get all user form db
@@ -41,10 +41,49 @@ const deleteUserByIDFromDB = async (userId: string) => {
   return result;
 };
 
+// update user order by id
+const updateUserOrderByUserIDIntoDB = async (
+  userId: string,
+  updateData: TOrder[],
+) => {
+  const result = await User.findOneAndUpdate(
+    { userId },
+    { orders: updateData },
+  );
+  return result;
+};
+
+// calculate total order price for a specific user
+const calculateUserTotalOrderPriceFromDB = async (userId: string) => {
+  const result = await User.aggregate([
+    {
+      $match: {
+        userId: Number(userId),
+      },
+    },
+    { $unwind: '$orders' },
+    {
+      $group: {
+        _id: '$_id',
+        total: { $sum: { $multiply: ['$orders.price', '$orders.quantity'] } },
+      },
+    },
+    {
+      $project: {
+        total: 1,
+        _id: 0,
+      },
+    },
+  ]);
+  return result[0];
+};
+
 export const UserServices = {
   insertUserIntoDB,
   getAllUserFromDB,
   getUserByIDFromDB,
   updateUserByIDIntoDB,
   deleteUserByIDFromDB,
+  updateUserOrderByUserIDIntoDB,
+  calculateUserTotalOrderPriceFromDB,
 };
