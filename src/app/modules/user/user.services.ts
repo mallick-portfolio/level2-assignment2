@@ -6,6 +6,7 @@ const getAllUserFromDB = async () => {
   const result = User.find(
     {},
     {
+      _id: 0,
       username: 1,
       fullName: 1,
       email: 1,
@@ -28,8 +29,15 @@ const insertUserIntoDB = async (user: TUser) => {
   return result;
 };
 
+// update user by id into db
+const updateUserByIDIntoDB = async (userId: string, updateData: TUser) => {
+  const result = await User.findOneAndUpdate({ userId }, updateData);
+  return result;
+};
+
 export const UserServices = {
   insertUserIntoDB,
   getAllUserFromDB,
   getUserByIDFromDB,
+  updateUserByIDIntoDB,
 };

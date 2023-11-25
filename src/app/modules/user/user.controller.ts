@@ -9,16 +9,15 @@ const getAllUsers = async (req: Request, res: Response) => {
   try {
     const result = await UserServices.getAllUserFromDB();
     return res.status(200).json({
-      success: false,
-      message: 'Success',
+      success: true,
+      message: 'Users fetched successfully!',
       data: result,
     });
   } catch (error) {
     return res.status(500).json({
       success: false,
       error: {
-        code: 404,
-        description: error || 'User not found!',
+        description: error,
       },
     });
   }
@@ -28,7 +27,14 @@ const getAllUsers = async (req: Request, res: Response) => {
 const getUserByID = async (req: Request, res: Response) => {
   try {
     const { userId } = req.params;
-    if (await User.isUserExists(userId)) {
+    const user = await User.isUserExists(userId);
+    if (user) {
+      return res.status(200).json({
+        success: true,
+        message: 'User fetched successfully!',
+        data: user,
+      });
+    } else {
       return res.status(404).json({
         success: false,
         message: 'User not found',
@@ -38,13 +44,6 @@ const getUserByID = async (req: Request, res: Response) => {
         },
       });
     }
-    const result = await UserServices.getUserByIDFromDB(req.params.userId);
-
-    return res.status(200).json({
-      success: false,
-      message: 'Success',
-      data: result,
-    });
   } catch (error) {
     return res.status(500).json({
       success: false,
@@ -60,13 +59,20 @@ const getUserByID = async (req: Request, res: Response) => {
 const createUser = async (req: Request, res: Response) => {
   try {
     const { user } = req.body;
-    const validateData = userValidationSchema.parse(user);
-    const result = await UserServices.insertUserIntoDB(validateData);
-    return res.status(200).json({
-      success: true,
-      message: 'User created successfully!',
-      data: result,
-    });
+    if (await User.isUserExists(user.userId)) {
+      return res.status(200).json({
+        success: false,
+        message: 'User already exist with this id!!!',
+      });
+    } else {
+      const validateData = userValidationSchema.parse(user);
+      const result = await UserServices.insertUserIntoDB(validateData);
+      return res.status(200).json({
+        success: true,
+        message: 'User created successfully!',
+        data: result,
+      });
+    }
   } catch (error) {
     if (error as ZodError) {
       return res.status(500).json({
@@ -88,8 +94,46 @@ const createUser = async (req: Request, res: Response) => {
   }
 };
 
+// update user by id
+
+const updateUserByID = async (req: Request, res: Response) => {
+  try {
+    const { userId } = req.params;
+    if (await User.isUserExists(userId)) {
+      const result = await UserServices.updateUserByIDIntoDB(
+        userId,
+        req.body.user,
+      );
+      return res.status(200).json({
+        success: true,
+        message: 'User updated successfully!',
+        data: result,
+      });
+    } else {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found',
+        error: {
+          code: 404,
+          description: 'User not found!',
+        },
+      });
+    }
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      error: {
+        code: 404,
+        description: error || 'User not found!',
+      },
+    });
+  }
+};
+
+// udpate user by id
 export const UserController = {
   createUser,
   getAllUsers,
   getUserByID,
+  updateUserByID,
 };

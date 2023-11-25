@@ -8,48 +8,59 @@ import {
 } from './user.interface';
 import bcrypt from 'bcrypt';
 import config from '../../config';
-export const fullNameSchema = new Schema<TFullName, UserModel>({
-  firstName: {
-    type: String,
-    required: true,
-    trim: true,
+export const fullNameSchema = new Schema<TFullName>(
+  {
+    firstName: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    lastName: {
+      type: String,
+      required: true,
+      trim: true,
+    },
   },
-  lastName: {
-    type: String,
-    required: true,
-    trim: true,
+  {
+    _id: false,
   },
-});
-export const addressSchema = new Schema<TAddress>({
-  city: {
-    type: String,
-    required: true,
+);
+export const addressSchema = new Schema<TAddress>(
+  {
+    city: {
+      type: String,
+      required: true,
+    },
+    country: {
+      type: String,
+      required: true,
+    },
+    street: {
+      type: String,
+      required: true,
+    },
   },
-  country: {
-    type: String,
-    required: true,
+  { _id: false },
+);
+export const orderSchema = new Schema<TOrder>(
+  {
+    productName: {
+      type: String,
+      required: true,
+    },
+    price: {
+      type: Number,
+      required: true,
+    },
+    quantity: {
+      type: Number,
+      required: true,
+    },
   },
-  street: {
-    type: String,
-    required: true,
-  },
-});
-export const orderSchema = new Schema<TOrder>({
-  productName: {
-    type: String,
-    required: true,
-  },
-  price: {
-    type: Number,
-    required: true,
-  },
-  quantity: {
-    type: Number,
-    required: true,
-  },
-});
+  { _id: false },
+);
 
-const userSchema = new Schema<TUser>(
+const userSchema = new Schema<TUser, UserModel>(
   {
     userId: {
       type: Number,
@@ -68,7 +79,6 @@ const userSchema = new Schema<TUser>(
     },
     fullName: {
       type: fullNameSchema,
-      required: true,
     },
     age: {
       type: Number,
@@ -83,6 +93,7 @@ const userSchema = new Schema<TUser>(
     isActive: {
       type: Boolean,
       required: true,
+      default: true,
     },
     hobbies: [
       {
@@ -114,6 +125,8 @@ userSchema.pre('save', async function (next) {
   next();
 });
 
+// after update user
+
 // userSchema.post('save', async function (doc, next) {
 //   doc.password = '';
 //   next();
@@ -122,6 +135,8 @@ userSchema.pre('save', async function (next) {
 // static method area
 
 userSchema.statics.isUserExists = async function (id: string) {
-  return this.findOne({ userId: id });
+  const existingUser = await User.findOne({ userId: id });
+  return existingUser;
 };
+
 export const User = model<TUser, UserModel>('User', userSchema);
