@@ -79,6 +79,7 @@ const userSchema = new Schema<TUser, UserModel>(
     },
     fullName: {
       type: fullNameSchema,
+
     },
     age: {
       type: Number,

@@ -54,17 +54,16 @@ const getUserByID = async (req: Request, res: Response) => {
 // create a new user
 const createUser = async (req: Request, res: Response) => {
   try {
-    const { user } = req.body;
     if (
-      (await User.isUserExists(user.userId)) ||
-      (await User.isEmailExists(user.email))
+      (await User.isUserExists(req.body.userId)) ||
+      (await User.isEmailExists(req.body.email))
     ) {
       return res.status(200).json({
         success: false,
         message: 'User already exist with this email or id!!!',
       });
     } else {
-      const validateData = userValidationSchema.parse(user);
+      const validateData = userValidationSchema.parse(req.body);
       const result = await UserServices.insertUserIntoDB(validateData);
       return res.status(200).json({
         success: true,
@@ -93,10 +92,7 @@ const updateUserByID = async (req: Request, res: Response) => {
   try {
     const { userId } = req.params;
     if (await User.isUserExists(userId)) {
-      const result = await UserServices.updateUserByIDIntoDB(
-        userId,
-        req.body.user,
-      );
+      const result = await UserServices.updateUserByIDIntoDB(userId, req.body);
       return res.status(200).json({
         success: true,
         message: 'User updated successfully!',

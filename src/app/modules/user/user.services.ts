@@ -19,7 +19,7 @@ const getAllUserFromDB = async () => {
 
 // get user by id  form db
 const getUserByIDFromDB = async (userId: string) => {
-  const result = await User.findOne({ userId }).select('-_id -__v').exec();
+  const result = await User.findOne({ userId }).select('-_id -__v');
   return result;
 };
 
@@ -31,7 +31,9 @@ const insertUserIntoDB = async (user: TUser) => {
 
 // update user by id into db
 const updateUserByIDIntoDB = async (userId: string, updateData: TUser) => {
-  const result = await User.findOneAndUpdate({ userId }, updateData);
+  const result = await User.findOneAndUpdate({ userId }, updateData, {
+    new: true,
+  });
   return result;
 };
 
